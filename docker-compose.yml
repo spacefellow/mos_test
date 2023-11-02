@@ -1,0 +1,37 @@
+services:
+  app:
+    build: ./
+    depends_on:
+      - database
+      - elasticsearch    
+    environment:
+     - DATABASE_URL=postgresql://user:password@database:5432/testdb
+     - ELASTICSEARCH_HOST=elasticsearch
+     - ELASTICSEARCH_PORT=9200
+    ports:
+      - "3000:5001"
+  database:
+    image: postgres:13
+    container_name: postgres
+    environment:
+      - POSTGRES_HOST=database
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=testdb
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.10.4
+    container_name: elasticsearch
+    environment:
+      - node.name=elasticsearch
+      - discovery.seed_hosts=elasticsearch
+      - cluster.initial_master_nodes=elasticsearch
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=false
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - "9200:9200"
